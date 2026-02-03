@@ -6,21 +6,22 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const taskId = params.id
 
-    if (!user) {
+    if (!taskId) {
       return NextResponse.json(
-        { error: '未授权' },
-        { status: 401 }
+        { error: '缺少任务ID' },
+        { status: 400 }
       )
     }
 
+    const supabase = createClient()
+
+    // 获取任务信息
     const { data: task, error } = await supabase
       .from('analysis_tasks')
       .select('*')
-      .eq('id', params.id)
-      .eq('user_id', user.id)
+      .eq('id', taskId)
       .single()
 
     if (error || !task) {
@@ -30,54 +31,47 @@ export async function GET(
       )
     }
 
-    const taskData = task as any
-    const progress = calculateProgress(taskData.status)
-    const stage = getStageFromStatus(taskData.status)
-    const message = getMessageFromStatus(taskData.status)
+    // 确保task有正确的类型
+    const typedTask = task as {
+      status: string
+      results?: unknown
+      updated_at?: string
+    }
 
-    return NextResponse.json({
-      task_id: taskData.id,
-      status: taskData.status,
-      progress,
-      stage,
-      message,
-    })
+    // 根据状态返回不同的响应
+    if (typedTask.status === 'completed') {
+      return NextResponse.json({
+        task_id: taskId,
+        status: 'completed',
+        results: typedTask.results,
+        completed_at: typedTask.updated_at,
+      })
+    } else if (typedTask.status === 'failed') {
+      return NextResponse.json({
+        task_id: taskId,
+        status: 'failed',
+        error: '分析失败，请重试',
+      })
+    } else if (typedTask.status === 'processing') {
+      return NextResponse.json({
+        task_id: taskId,
+        status: 'processing',
+        progress: 50,
+        message: '正在分析中...',
+      })
+    } else {
+      return NextResponse.json({
+        task_id: taskId,
+        status: 'pending',
+        message: '等待处理...',
+      })
+    }
 
   } catch (error) {
-    console.error('获取状态错误:', error)
+    console.error('查询状态错误:', error)
     return NextResponse.json(
       { error: '服务器内部错误' },
       { status: 500 }
     )
   }
-}
-
-function calculateProgress(status: string): number {
-  const progressMap: Record<string, number> = {
-    'pending': 10,
-    'processing': 50,
-    'completed': 100,
-    'failed': 0,
-  }
-  return progressMap[status] || 0
-}
-
-function getStageFromStatus(status: string): string {
-  const stageMap: Record<string, string> = {
-    'pending': 'uploading',
-    'processing': 'analyzing',
-    'completed': 'generating',
-    'failed': 'uploading',
-  }
-  return stageMap[status] || 'uploading'
-}
-
-function getMessageFromStatus(status: string): string {
-  const messageMap: Record<string, string> = {
-    'pending': '等待处理...',
-    'processing': '正在分析动作...',
-    'completed': '分析完成',
-    'failed': '分析失败',
-  }
-  return messageMap[status] || '处理中...'
 }

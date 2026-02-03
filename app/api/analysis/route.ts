@@ -1,19 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { analyzeShootingForm } from '@/lib/analysis/engine'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { video_url, camera_angle, lighting_condition } = body
+    const { video_url, camera_angle, lighting_condition, task_id } = body
 
-    if (!video_url) {
+    if (!video_url && !task_id) {
       return NextResponse.json(
-        { error: '缺少视频URL' },
+        { error: '缺少视频URL或任务ID' },
         { status: 400 }
       )
     }
 
     const supabase = createClient()
+
+    // 如果提供了task_id，则执行分析
+    if (task_id) {
+      try {
+        // 更新任务状态为处理中
+        await supabase
+          .from('analysis_tasks')
+          .update({ status: 'processing' } as never)
+          .eq('id', task_id)
+
+        // 获取任务信息
+        const { data: taskData, error: fetchError } = await supabase
+          .from('analysis_tasks')
+          .select('*')
+          .eq('id', task_id)
+          .single()
+
+        if (fetchError || !taskData) {
+          throw new Error('任务不存在')
+        }
+
+        // 执行分析
+        const analysisResult = await analyzeShootingForm(
+          (taskData as any).video_url,
+          (taskData as any).camera_angle || 'side'
+        )
+
+        // 保存结果
+        const { error: updateError } = await supabase
+          .from('analysis_tasks')
+          .update({
+            status: 'completed',
+            results: analysisResult,
+            updated_at: new Date().toISOString(),
+          } as never)
+          .eq('id', task_id)
+
+        if (updateError) {
+          throw updateError
+        }
+
+        return NextResponse.json({
+          task_id,
+          status: 'completed',
+          results: analysisResult,
+          message: '分析完成',
+        })
+      } catch (analysisError) {
+        console.error('分析执行错误:', analysisError)
+
+        // 更新任务状态为失败
+        await supabase
+          .from('analysis_tasks')
+          .update({
+            status: 'failed',
+            updated_at: new Date().toISOString(),
+          } as never)
+          .eq('id', task_id)
+
+        return NextResponse.json(
+          { error: '分析执行失败' },
+          { status: 500 }
+        )
+      }
+    }
+
+    // 创建新任务
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {

@@ -83,22 +83,54 @@ export default function UploadPage() {
     setUploadProgress(0)
 
     try {
-      const formData = new FormData()
-      formData.append('video', file)
-      formData.append('camera_angle', cameraAngle)
-      formData.append('lighting_condition', lightingCondition)
-
-      const response = await fetch('/api/upload', {
+      // Step 1: Get presigned URL (bypasses Vercel's 4.5MB limit)
+      const presignResponse = await fetch('/api/upload/presigned', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type,
+        }),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || '上传失败')
+      if (!presignResponse.ok) {
+        const error = await presignResponse.json()
+        throw new Error(error.error || '获取上传链接失败')
       }
 
-      const data = await response.json()
+      const { uploadUrl, fileName, tempUserId } = await presignResponse.json()
+
+      // Step 2: Upload directly to Supabase Storage
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error('视频上传失败')
+      }
+
+      // Step 3: Create task record
+      const createTaskResponse = await fetch('/api/upload/task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName,
+          tempUserId,
+          cameraAngle,
+          lightingCondition,
+        }),
+      })
+
+      if (!createTaskResponse.ok) {
+        const error = await createTaskResponse.json()
+        throw new Error(error.error || '创建任务失败')
+      }
+
+      const data = await createTaskResponse.json()
       
       router.push(`/analysis/${data.task_id}/waiting`)
     } catch (err) {

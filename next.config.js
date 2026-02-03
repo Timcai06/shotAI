@@ -11,6 +11,12 @@ const nextConfig = {
       },
     ],
   },
+  // 增加请求体大小限制 (100MB)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '100mb',
+    },
+  },
 }
 
 module.exports = nextConfig

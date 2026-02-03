@@ -3,200 +3,185 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Loader2, Activity, Clock, Zap, CheckCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import type { AnalysisProgress } from '@/types'
+import { ChevronLeft, Loader } from 'lucide-react'
 
-const stages = [
-  { id: 'uploading', label: '上传视频', icon: Activity },
-  { id: 'detecting', label: '姿态检测', icon: Zap },
-  { id: 'analyzing', label: '动作分析', icon: Activity },
-  { id: 'generating', label: '生成报告', icon: CheckCircle },
-]
-
-export default function AnalysisWaitingPage() {
+export default function WaitingPage() {
   const params = useParams()
   const router = useRouter()
   const taskId = params.task_id as string
-  
-  const [progress, setProgress] = useState<AnalysisProgress | null>(null)
-  const [elapsedTime, setElapsedTime] = useState(0)
+
+  const [status, setStatus] = useState<'pending' | 'processing' | 'completed' | 'failed'>('pending')
+  const [progress, setProgress] = useState(0)
+  const [message, setMessage] = useState('准备分析...')
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsedTime((prev) => prev + 1)
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [])
 
   useEffect(() => {
     if (!taskId) return
 
-    const fetchProgress = async () => {
+    // 轮询检查状态
+    const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(`/api/analysis/${taskId}/status`)
-        if (!response.ok) throw new Error('获取进度失败')
-        
         const data = await response.json()
-        setProgress(data)
 
         if (data.status === 'completed') {
-          router.push(`/analysis/${taskId}/result`)
+          setStatus('completed')
+          setProgress(100)
+          setMessage('分析完成！')
+          clearInterval(pollInterval)
+          // 2秒后跳转到结果页面
+          setTimeout(() => {
+            router.push(`/analysis/${taskId}/result`)
+          }, 2000)
         } else if (data.status === 'failed') {
-          setError(data.message || '分析失败')
+          setStatus('failed')
+          setError(data.error || '分析失败')
+          clearInterval(pollInterval)
+        } else if (data.status === 'processing') {
+          setStatus('processing')
+          setProgress(data.progress || 50)
+          setMessage(data.message || '分析中...')
+        } else {
+          setStatus('pending')
+          setProgress(Math.min(progress + 5, 30))
+          setMessage('等待处理...')
         }
       } catch (err) {
-        console.error('获取进度错误:', err)
+        console.error('轮询错误:', err)
       }
-    }
+    }, 2000)
 
-    fetchProgress()
-    const interval = setInterval(fetchProgress, 3000)
-
-    return () => clearInterval(interval)
-  }, [taskId, router])
-
-  const currentStageIndex = stages.findIndex(s => s.id === progress?.stage) || 0
-  const currentProgress = progress?.progress || 0
+    return () => clearInterval(pollInterval)
+  }, [taskId, router, progress])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
-          >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Link href="/" className="flex items-center gap-2 text-primary-600 hover:text-primary-700">
             <ChevronLeft className="w-5 h-5" />
             返回首页
           </Link>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">分析中...</h1>
-          <p className="text-gray-600">AI正在分析您的投篮动作</p>
-        </div>
+      {/* Main Content */}
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="bg-white rounded-lg shadow-lg p-12 text-center">
+          {error ? (
+            <>
+              <div className="text-red-600 mb-6">
+                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">分析失败</h1>
+              <p className="text-gray-600 mb-8">{error}</p>
+              <Link
+                href="/upload"
+                className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg hover:bg-primary-700 transition-colors font-medium"
+              >
+                重新上传
+              </Link>
+            </>
+          ) : status === 'completed' ? (
+            <>
+              <div className="text-green-600 mb-6">
+                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">分析完成！</h1>
+              <p className="text-gray-600 mb-8">正在跳转到结果页面...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+            </>
+          ) : (
+            <>
+              <div className="mb-8">
+                <Loader className="w-16 h-16 mx-auto text-primary-600 animate-spin" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">正在分析您的投篮动作</h1>
+              <p className="text-gray-600 mb-8">{message}</p>
 
-        {/* Progress Animation */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          {/* Skeleton Visual */}
-          <div className="relative h-48 bg-gray-100 rounded-xl mb-8 flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-pulse" />
-            <div className="text-center">
-              <Activity className="w-12 h-12 text-primary-600 mx-auto mb-2 animate-pulse" />
-              <p className="text-sm text-gray-500">3D骨骼检测动画</p>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">总进度</span>
-              <span className="text-sm text-gray-500">{currentProgress}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-primary-600 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${currentProgress}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Stage Indicators */}
-          <div className="grid grid-cols-4 gap-2">
-            {stages.map((stage, index) => {
-              const Icon = stage.icon
-              const isActive = index <= currentStageIndex
-              const isCurrent = index === currentStageIndex
-
-              return (
-                <div
-                  key={stage.id}
-                  className={cn(
-                    "flex flex-col items-center p-3 rounded-lg transition-all",
-                    isCurrent ? "bg-primary-100" : isActive ? "bg-gray-100" : "bg-gray-50"
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "w-5 h-5 mb-2",
-                      isCurrent
-                        ? "text-primary-600 animate-pulse"
-                        : isActive
-                        ? "text-gray-600"
-                        : "text-gray-400"
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "text-xs text-center",
-                      isCurrent ? "text-primary-700 font-medium" : "text-gray-500"
-                    )}
-                  >
-                    {stage.label}
-                  </span>
+              {/* Progress Bar */}
+              <div className="mb-8">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${progress}%` }}
+                  ></div>
                 </div>
-              )
-            })}
-          </div>
+                <p className="text-sm text-gray-500 mt-2">{progress}%</p>
+              </div>
 
-          {/* Current Message */}
-          {progress?.message && (
-            <p className="mt-6 text-center text-sm text-gray-600">
-              {progress.message}
-            </p>
+              {/* Analysis Steps */}
+              <div className="text-left space-y-4 mb-8">
+                <AnalysisStep
+                  title="视频处理"
+                  description="提取视频帧并进行姿态检测"
+                  completed={progress > 20}
+                />
+                <AnalysisStep
+                  title="关键点检测"
+                  description="识别33个人体关键点"
+                  completed={progress > 40}
+                />
+                <AnalysisStep
+                  title="9维度分析"
+                  description="计算一致性、对称性、动力链等指标"
+                  completed={progress > 60}
+                />
+                <AnalysisStep
+                  title="生成报告"
+                  description="生成AI分析报告和训练建议"
+                  completed={progress > 80}
+                />
+              </div>
+
+              {/* Tips */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+                <p className="text-sm text-blue-900 font-medium mb-2">💡 分析提示</p>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• 分析通常需要 30-60 秒</li>
+                  <li>• 请勿关闭此页面</li>
+                  <li>• 分析完成后将自动跳转到结果页面</li>
+                </ul>
+              </div>
+            </>
           )}
         </div>
+      </main>
+    </div>
+  )
+}
 
-        {/* Time & Quality Estimate */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl shadow p-4 flex items-center gap-4">
-            <Clock className="w-8 h-8 text-gray-400" />
-            <div>
-              <p className="text-sm text-gray-500">已用时</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
-              </p>
-            </div>
+interface AnalysisStepProps {
+  title: string
+  description: string
+  completed: boolean
+}
+
+function AnalysisStep({ title, description, completed }: AnalysisStepProps) {
+  return (
+    <div className="flex gap-4">
+      <div className="flex-shrink-0">
+        {completed ? (
+          <div className="flex items-center justify-center h-6 w-6 rounded-full bg-green-600">
+            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-          <div className="bg-white rounded-xl shadow p-4 flex items-center gap-4">
-            <Activity className="w-8 h-8 text-primary-500" />
-            <div>
-              <p className="text-sm text-gray-500">预估检测质量</p>
-              <p className="text-lg font-semibold text-primary-700">良好</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Fun Facts */}
-        <div className="mt-8 bg-blue-50 rounded-xl p-6">
-          <h3 className="text-sm font-medium text-blue-900 mb-2">篮球小知识</h3>
-          <p className="text-sm text-blue-700">
-            动作一致性（而非绝对角度）是命中率的最强预测因子，相关性高达 r=-0.96。
-            精英球员的特征不是"标准姿势"，而是极高的动作重复性。
-          </p>
-          <p className="text-xs text-blue-600 mt-2">
-            参考：Slegers et al. (2021), Journal of Sports Sciences
-          </p>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="mt-8 bg-red-50 border border-red-200 rounded-xl p-4">
-            <p className="text-red-700">{error}</p>
-            <Link
-              href="/upload"
-              className="mt-2 inline-block text-sm text-primary-600 hover:text-primary-700"
-            >
-              重新上传
-            </Link>
+        ) : (
+          <div className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-300">
+            <div className="h-2 w-2 rounded-full bg-gray-600"></div>
           </div>
         )}
-      </main>
+      </div>
+      <div>
+        <p className={`font-medium ${completed ? 'text-gray-900' : 'text-gray-600'}`}>{title}</p>
+        <p className="text-sm text-gray-500">{description}</p>
+      </div>
     </div>
   )
 }
