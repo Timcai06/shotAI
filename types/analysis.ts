@@ -173,6 +173,7 @@ export interface SymmetryAnalysis {
 export interface ShootingStyleAnalysis {
   style: ShootingStyle
   confidence: number
+  score: number
   characteristics: {
     has_pause_at_set_point: boolean
     release_smoothness: number

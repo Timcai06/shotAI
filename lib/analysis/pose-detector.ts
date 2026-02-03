@@ -5,7 +5,8 @@
  * 支持客户端和服务器端处理
  */
 
-import type { PoseLandmark, Landmark, PoseFrame, PoseSequence } from '@/types/analysis'
+import { PoseLandmark } from '@/types/analysis'
+import type { Landmark, PoseFrame, PoseSequence } from '@/types/analysis'
 
 // MediaPipe 配置选项
 export interface PoseDetectorOptions {

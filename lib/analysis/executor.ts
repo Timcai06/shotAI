@@ -35,7 +35,7 @@ export async function executeAnalysisJob(job: AnalysisJob): Promise<void> {
     console.log(`[AnalysisExecutor] Overall score: ${result.overall_score}`)
     
     // 完成任务
-    await analysisQueue.complete(job.taskId, result)
+    await analysisQueue.complete(job.taskId, result as unknown as Record<string, unknown>)
     
   } catch (error) {
     console.error(`[AnalysisExecutor] Analysis failed for task ${job.taskId}:`, error)

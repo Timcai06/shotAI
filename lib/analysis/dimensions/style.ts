@@ -48,6 +48,7 @@ export function analyzeShootingStyle(sequence: PoseSequence): ShootingStyleAnaly
     return {
       style: 'hybrid' as ShootingStyle,
       confidence: 0.5,
+      score: 50,
       characteristics: {
         has_pause_at_set_point: false,
         release_smoothness: 0.5,
@@ -89,9 +90,17 @@ export function analyzeShootingStyle(sequence: PoseSequence): ShootingStyleAnaly
     confidence = 0.6
   }
   
+  // 计算得分
+  const score = Math.round(
+    confidence * 100 * 0.6 +
+    smoothness * 100 * 0.3 +
+    timing * 100 * 0.1
+  )
+
   return {
     style,
     confidence: Math.round(confidence * 100) / 100,
+    score,
     characteristics: {
       has_pause_at_set_point: hasPause,
       release_smoothness: Math.round(smoothness * 100) / 100,
