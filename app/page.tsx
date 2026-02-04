@@ -1,29 +1,26 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { Upload, PlayCircle, Shield, AlertCircle, ChevronRight, TrendingUp } from 'lucide-react'
+import { Upload, PlayCircle, Shield, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function HomePage() {
-  const [showBoundaryInfo, setShowBoundaryInfo] = useState(false)
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f2785] to-white">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-around">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+        <div className="max-w-7xl mx-auto px-12 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">ShotAI</span>
           </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/guide" className="text-gray-600 hover:text-gray-900 transition-colors">
+          <nav className="flex items-center gap-8">
+            <Link href="/guide" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               拍摄指南
             </Link>
-            <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="/about" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               AI能力边界
             </Link>
           </nav>
@@ -31,58 +28,26 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-24 lg:pt-24 lg:pb-32">
+      <section className="relative pt-20 pb-24">
         <div className="max-w-7xl mx-auto px-12">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              科学分析您的
-              <span className="text-primary-600">投篮动作</span>
+            <h1 className="text-5xl font-bold text-gray-900 mb-6">
+              科学分析您的投篮动作
             </h1>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-gray-600 mb-4">
               使用AI技术进行9维度专业评估，获得个性化训练建议
-              <br />
-              <span className="text-accent-600 font-medium">首次分析仅需 ¥9.9</span>
             </p>
-
-            {/* AI Boundary Alert */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 max-w-2xl mx-auto">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="text-sm text-amber-800 font-medium mb-1">AI能力边界说明</p>
-                  <p className="text-sm text-amber-700">
-                    我们能分析动作一致性和角度变化，但无法测量力量大小。
-                    <button
-                      onClick={() => setShowBoundaryInfo(!showBoundaryInfo)}
-                      className="underline ml-1 hover:text-amber-900"
-                    >
-                      了解更多
-                    </button>
-                  </p>
-                  {showBoundaryInfo && (
-                    <div className="mt-3 text-sm text-amber-700 bg-amber-100 p-3 rounded">
-                      <p className="mb-2"><strong>能做：</strong>关节角度测量（±15°误差）、动作一致性分析、时序分析、动力链协调性评估</p>
-                      <p><strong>不能做：</strong>力量测量（需测力台）、神经肌肉协调评估（需EMG）、绝对准确率保证</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <p className="text-lg text-amber-600 font-semibold mb-8">
+              首次分析仅需 ¥9.9
+            </p>
 
             {/* Main CTA */}
             <Link
               href="/upload"
-              className={cn(
-                "inline-flex items-center gap-3 px-8 py-4",
-                "bg-primary-600 hover:bg-primary-700",
-                "text-white text-lg font-semibold rounded-xl",
-                "shadow-lg shadow-primary-600/25",
-                "transition-all hover:scale-105 active:scale-95"
-              )}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
-              <Upload className="w-6 h-6" />
+              <Upload className="w-5 h-5" />
               上传视频开始分析
-              <ChevronRight className="w-5 h-5" />
             </Link>
 
             <p className="mt-4 text-sm text-gray-500">
@@ -93,33 +58,35 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-12">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">9维度专业分析</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             <FeatureCard
               icon={<TrendingUp className="w-6 h-6" />}
               title="动作一致性"
               description="命中率最强预测因子（r=-0.96）。分析膝关节、肘关节角度波动范围。"
-              highlight
+              color="blue"
             />
             <FeatureCard
               icon={<Shield className="w-6 h-6" />}
               title="科学诚实"
               description="所有测量标注误差范围（±15°），明确说明AI能力与局限。"
+              color="green"
             />
             <FeatureCard
               icon={<PlayCircle className="w-6 h-6" />}
               title="个性化训练"
               description="基于您的动作数据，生成针对性的训练计划和改进建议。"
+              color="orange"
             />
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-12">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">三步开始</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <StepCard
@@ -143,15 +110,15 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-primary-600 rounded flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-white" />
+        <div className="max-w-7xl mx-auto px-12">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg font-semibold text-white">ShotAI</span>
+              <span className="text-lg font-bold text-white">ShotAI</span>
             </div>
-            <p className="text-sm">
+            <p className="text-sm text-gray-400">
               基于科学研究的动作分析工具 · 不保证命中率提升
             </p>
           </div>
@@ -165,26 +132,29 @@ function FeatureCard({
   icon,
   title,
   description,
-  highlight = false,
+  color,
 }: {
   icon: React.ReactNode
   title: string
   description: string
-  highlight?: boolean
+  color: 'blue' | 'green' | 'orange'
 }) {
+  const colorClasses = {
+    blue: 'bg-blue-600',
+    green: 'bg-green-600',
+    orange: 'bg-orange-500'
+  }
+  
   return (
-    <div className={cn(
-      "p-6 rounded-xl transition-all hover:shadow-lg",
-      highlight ? "bg-primary-50 border-2 border-primary-200" : "bg-gray-50"
-    )}>
+    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
       <div className={cn(
-        "w-12 h-12 rounded-lg flex items-center justify-center mb-4",
-        highlight ? "bg-primary-600 text-white" : "bg-gray-200 text-gray-700"
+        "w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-white",
+        colorClasses[color]
       )}>
         {icon}
       </div>
       <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
+      <p className="text-sm text-gray-600">{description}</p>
     </div>
   )
 }
@@ -200,11 +170,11 @@ function StepCard({
 }) {
   return (
     <div className="text-center">
-      <div className="w-16 h-16 bg-primary-600 text-white text-2xl font-bold rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="w-16 h-16 bg-blue-600 text-white text-2xl font-bold rounded-full flex items-center justify-center mx-auto mb-4">
         {number}
       </div>
       <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
+      <p className="text-sm text-gray-600">{description}</p>
     </div>
   )
 }
