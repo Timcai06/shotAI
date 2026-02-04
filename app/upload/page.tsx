@@ -140,10 +140,10 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-[#0f2785] to-white">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-md">
+        <div className="max-w-7xl mx-auto px-12 py-4">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
@@ -154,7 +154,7 @@ export default function UploadPage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-3xl mx-auto px-12 py-12">
         <h1 className="text-3xl font-bold text-gray-900 text-center mb-4">
           上传视频
         </h1>

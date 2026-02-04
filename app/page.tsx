@@ -9,10 +9,10 @@ export default function HomePage() {
   const [showBoundaryInfo, setShowBoundaryInfo] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-[#0f2785] to-white">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-around">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-white" />
@@ -31,9 +31,9 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
+      <section className="relative pt-20 pb-24 lg:pt-24 lg:pb-32">
+        <div className="max-w-7xl mx-auto px-12">
+          <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
               科学分析您的
               <span className="text-primary-600">投篮动作</span>
@@ -93,8 +93,8 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-12">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">9维度专业分析</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <FeatureCard

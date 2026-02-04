@@ -55,10 +55,10 @@ export default function WaitingPage() {
   }, [taskId, router, progress])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-[#0f2785] to-white">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-12 py-4">
           <Link href="/" className="flex items-center gap-2 text-primary-600 hover:text-primary-700">
             <ChevronLeft className="w-5 h-5" />
             返回首页
@@ -67,7 +67,7 @@ export default function WaitingPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <main className="max-w-2xl mx-auto px-12 py-20">
         <div className="bg-white rounded-lg shadow-lg p-12 text-center">
           {error ? (
             <>

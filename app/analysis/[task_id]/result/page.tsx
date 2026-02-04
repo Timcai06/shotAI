@@ -106,10 +106,10 @@ export default function ResultPage() {
   const { overall_score, nine_dimensions, confidence_interval, metadata } = result
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-[#0f2785] to-white">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-12 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-primary-600 hover:text-primary-700">
             <ChevronLeft className="w-5 h-5" />
             返回
@@ -126,7 +126,7 @@ export default function ResultPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-12 py-12">
         {/* Overall Score Card */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
